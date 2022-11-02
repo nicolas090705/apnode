@@ -8,6 +8,10 @@
 </head>
 <body>
     <h1>Prueba</h1>
-    
+    <%if(user){ %>
+        <h1>adentro del if</h1>
+        <p><%= user[0].Usu_id %></p>
+        <p><%= user[0].Usu_contraseña %></p>        
+    <% } %>
 </body>
 </html>

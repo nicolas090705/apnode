@@ -67,7 +67,7 @@ conexion.connect(function(error){
 });
 
 
-/************************ REGISTRAR UN NUEVO USUARIO ******************************/
+/********************************** REGISTRAR UN NUEVO USUARIO ******************************/
 app.get('/registrarvistaApp',function(req,res){
   res.render("registrarvista");    
 });
@@ -82,14 +82,31 @@ app.post('/registrarDB',function(req,res){
 
   if(nombre!="" && correo!="" && contraseña!=""){
     //validar si no hay registros con el correo
-    
-    //INSERTAR 
-    //INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("dddd","ddd","dd",CURRENT_TIMESTAMP);
-    conexion.query('INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("'+correo+'","'+contraseña+'","'+nombre+'",CURRENT_TIMESTAMP);',function(error,results){
-      if(error)throw error;      
-        console.log("Usuario Agregado: ",results);  
-        res.render("index");      
-    });
+    //SELECT Usu_id FROM cellgadb.usuario WHERE Usu_id='anicolash2001@alumno.ipn.mx'; 
+    conexion.query("SELECT Usu_id FROM cellgadb.usuario WHERE Usu_id='"+correo+"';",(error,results)=>{
+      if(error) throw error;
+      console.log("results",results);
+      //console.log("results[0]: ",results[0].Usu_id);
+      if(results==""){
+        //INSERTAR 
+        //INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("dddd","ddd","dd",CURRENT_TIMESTAMP);
+        conexion.query('INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("'+correo+'","'+contraseña+'","'+nombre+'",CURRENT_TIMESTAMP);',function(error2,results2){
+          if(error2)throw error2;      
+            console.log("Usuario Agregado: ",results2);             
+        });
+        console.log('Se registro con exito');
+        //CREAR LA TABLA INDIVIDUAL DEL USUARIO
+        //INSERT INTO cellgadb.tabla_individual(Ti_nombre,Usu_id) VALUES("tabla de Nicolas", "pruea@gmail.com" );
+        conexion.query('INSERT INTO cellgadb.tabla_individual(Ti_nombre,Usu_id) VALUES("tabla de '+nombre+'", "'+correo+'" );',(error3,results3)=>{
+          if(error3) throw error3;
+          console.log('Tabla individual creada ',results3);
+          res.render("index");
+        });        
+      }else{
+        console.log("if results no vacio")
+        res.render('registrarvista');
+      }
+    });    
   }
 });
 
@@ -104,31 +121,65 @@ app.post('/loginvistaDB',function(req,res){
   conexion.query('SELECT Usu_id, Usu_contraseña FROM usuario WHERE Usu_id = "'+correoForm+'" AND Usu_contraseña = "'+pssForm+'";',function(err,result){
     if(err) throw err; 
     if(result!=""){
-      console.log("if no nulo");
+      console.log("if results!=''");
       var correoDB = result[0].Usu_id;
       var pssDB = result[0].Usu_contraseña;
       console.log(`correo: ${correoForm} pass: ${pssForm}`);
       console.log(`correoDB: ${correoDB} pssDB: ${pssDB}`);    
-      // if(correoForm!=correoDB && pssForm!=pssDB){
-      //   res.render('loginvista'); 
-      // }     
-      res.render('prueba'); 
+      req.session.user = result;
+      var usuario = req.session.user;
+      console.log("user",req.session.user);
+      console.log("Usuario",usuario);
+      console.log("result",result);
+      res.render('prueba',{user:result});
     }else{
       console.log("else");
       res.render('loginvista');
-    }
-    console.log("fuera del if");
-  });
-  req.session.user = req.body;
-  //res.render('prueba');
+    }//fin del if(results!="")    
+  });  
 });
 
-app.get('/prueba',(req,res)=>{
+/******************************FIN LOGIN*****************************/
+app.get('/cerrarSesion',(req,res)=>{
+  delete req.session.user;
+  res.render('index');
+});
+app.get('/registroTI',(req,res)=>{
+  var usuario = req.session.user;
+  console.log("/registroTI",usuario);
+  res.render('registroTI',{user:usuario});
+});
+/*********************************AGREGAR ACTIVIDAD INDIVIDUAL***************************************/
+app.post('/agregarActividadTIDB',(req,res)=>{
+  console.log('/agregarActividadTIDB');  
+  var usuario = req.session.user;
+  if(usuario){
+  var tema = req.body.tema;
+  var descripcion = req.body.descripcion;
+  var FechaTermino = req.body.fecha;
+  console.log('/agregarActividadTIDB2'); 
+  console.log(`temaForm: ${tema} descForm: ${descripcion} FechaTermino: ${FechaTermino}`);
+  console.log('/agregarActividadTIDB3'); 
+  //INSERT INTO cellgadb.tarea_ti(Tari_tema,Tari_descripcion,Tari_fechaCrea,tari_fechaExp,Ti_id) VALUES ('Prueba1','insertar una actividad',CURRENT_TIMESTAMP(),'2022-11-02 12:57:00','10');
+  conexion.query("INSERT INTO cellgadb.tarea_ti(Tari_tema,Tari_descripcion,Tari_fechaCrea,tari_fechaExp,Ti_id) VALUES ('"+tema+"','"+descripcion+"',CURRENT_TIMESTAMP,'"+FechaTermino+"','10');",(err,results)=>{
+    if(err) throw err;
+    console.log('Se agrego actividad',results);
+  });
+  }
+  res.render('registroTI',{user:usuario});
+});
+
+app.get('/index',(req,res)=>{
   //console.log(results);
   // console.log(resultados); 
   // var usuario = req.session.user;
   //res.render('prueba',{usuario})
-  res.render('prueba')
+  res.render('index');
+});
+/*******************************TABLERO EN EQUIPO********************************/
+app.get('/indexequipo',(req,res)=>{
+  var usuario = req.session.user;
+  res.render('indexequipo',{user:usuario});  
 });
 
 app.get('/prueba2',(req,res)=>{
