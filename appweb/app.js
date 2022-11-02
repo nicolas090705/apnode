@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var session = require('express-session');
+var flash = require('connect-flash');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -30,11 +31,19 @@ app.use(express.static(__dirname + '/public'));
 //para capturar los datos del formulario
 app.use(express.urlencoded({extended:false}));
 app.use(express(json));
+//configurara las sesiones
 app.use(session({
   secret:"culaquierecosa",
   resave: false,
   saveUninitialized:false
 }));
+app.use(flash());
+
+//Variables globales
+// app.use((req,res,next)=>{
+//   app.locals.usuario = req.session('user')[0];
+//   next();
+// })
 
 /*app.use(bodyParser.urlencoded({
   extended : true
@@ -72,14 +81,16 @@ app.post('/registrarDB',function(req,res){
   console.log(contraseña);
 
   if(nombre!="" && correo!="" && contraseña!=""){
+    //validar si no hay registros con el correo
+    
     //INSERTAR 
     //INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("dddd","ddd","dd",CURRENT_TIMESTAMP);
     conexion.query('INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("'+correo+'","'+contraseña+'","'+nombre+'",CURRENT_TIMESTAMP);',function(error,results){
-      if(error) throw error;
-      console.log("Usuario Agregado: ",results);
-      res.render("index");
+      if(error)throw error;      
+        console.log("Usuario Agregado: ",results);  
+        res.render("index");      
     });
-  } 
+  }
 });
 
 /******************************************INICIAR SESION************************/
@@ -87,6 +98,42 @@ app.get('/loginvistaApp',function(req,res){
   res.render("loginvista");
 });
 
+app.post('/loginvistaDB',function(req,res){
+  var correoForm = req.body.campo_correo;
+  var pssForm = req.body.campo_pass;
+  conexion.query('SELECT Usu_id, Usu_contraseña FROM usuario WHERE Usu_id = "'+correoForm+'" AND Usu_contraseña = "'+pssForm+'";',function(err,result){
+    if(err) throw err; 
+    if(result!=""){
+      console.log("if no nulo");
+      var correoDB = result[0].Usu_id;
+      var pssDB = result[0].Usu_contraseña;
+      console.log(`correo: ${correoForm} pass: ${pssForm}`);
+      console.log(`correoDB: ${correoDB} pssDB: ${pssDB}`);    
+      // if(correoForm!=correoDB && pssForm!=pssDB){
+      //   res.render('loginvista'); 
+      // }     
+      res.render('prueba'); 
+    }else{
+      console.log("else");
+      res.render('loginvista');
+    }
+    console.log("fuera del if");
+  });
+  req.session.user = req.body;
+  //res.render('prueba');
+});
+
+app.get('/prueba',(req,res)=>{
+  //console.log(results);
+  // console.log(resultados); 
+  // var usuario = req.session.user;
+  //res.render('prueba',{usuario})
+  res.render('prueba')
+});
+
+app.get('/prueba2',(req,res)=>{
+  res.render('prueba')
+});
 
 
 app.get('/agregar',function(req,res){
