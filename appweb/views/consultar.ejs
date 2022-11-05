@@ -36,14 +36,15 @@
             </tr>
         </thead>
         <tbody>
-            <% result.forEach((user)=>{ %>
+            <!-- el arreglo (result) lo vamos a recorrer como us -->
+            <% result.forEach((us)=>{ %>
             <tr>
-                <td class="text-white"><%= user.nombre %></td>
-                <td class="text-white"><%= user.precio %></td>
-                <td class="text-white"><%= user.descripcion %></td>
+                <td class="text-white"><%= us.nombre %></td>
+                <td class="text-white"><%= us.precio %></td>
+                <td class="text-white"><%= us.descripcion %></td>
                 <td>
-                    <a href="/actualizar/<%= user.nombre %>" class="btn btn-outline-info">editar</a>
-                    <a href="/eliminar/<%= user.nombre %>" class="btn btn-outline-danger">borrar</a>
+                    <a href="/actualizar/<%= us.nombre %>" class="btn btn-outline-info">editar</a>
+                    <a href="/eliminar/<%= us.nombre %>" class="btn btn-outline-danger">borrar</a>
                 </td>
             </tr>
             <% }) %>

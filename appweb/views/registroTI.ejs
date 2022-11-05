@@ -29,7 +29,7 @@
 	<link href="css/styles.css" rel="stylesheet">
 </head>
 <body data-bs-spy="scroll" data-bs-target="#navbarExample">
-    <%if(user){ %>
+    <%if(user){ %>        
         <nav id="navbarExample" class="navbar navbar-expand-lg fixed-top navbar-light" aria-label="Main navigation">
         <div class="container">
             <!-- Image Logo -->
@@ -76,26 +76,33 @@
     </header> <!-- end of header -->
 
     <div class="container">
-        <a class="btn-solid-reg" data-bs-toggle="modal" data-bs-target="#unirtablero">Crear Tablero</a>
+        <a class="btn-solid-reg" data-bs-toggle="modal" data-bs-target="#unirtablero">Crear Tablero</a><br>
         
-        
-        <div class="eventoalto">
+        <% for(var i=0; i < results.length; i++){ %>
+            <div class="<%= results[i].Tari_color%>">                
+                <strong><%= results[i].Tari_tema %></strong><br>
+                <p><%= results[i].Tari_descripcion %></p><br>
+                <p><%= results[i].tari_fechaExp %></p>
+                <a href="/actualizar/<%= results[i].Tari_id %>">UPDATE</a>
+                <a href="/eliminar/<%= results[i].Tari_id %>">DELETE</a>                
+            </div>
+        <% } %>
+
+
+        <div class="alto">
             <strong>Hacer la tarea de química.</strong><br>
             <p>Contestar todas las preguntas que dejó, e investigar acerca de la próxima práctica.</p>
         </div>
-        <div class="eventomedio">
+        <div class="medio">
             <strong>Sacar la basura.</strong><br>
             <p></p>
         </div>
-        <div class="eventobajo">
-            <strong>Hacer ejercicio.</strong><br>
-            <p></p>
-        </div>
-        <div class="eventobajo">
+        
+        <div class="bajo">
             <strong>Comprar fruta.</strong><br>
             <p>Mango, sandía, plátano y papaya.</p>
         </div>
-        <div class="eventomedio">
+        <div class="medio">
             <strong>Realizar los trámites pendientes.</strong><br>
             <p>Rellenar el formulario, escanear los archivos.</p>
         </div>
@@ -112,11 +119,15 @@
                     <form action="/agregarActividadTIDB" method="POST">
                         <h3>Ingrese la informacion de la asignacion</h3>
                         <hr>
-                        Tema: <input type="text"  class="form-control" id="tema" name="tema" aria-describedby="emailHelp">
-                        Descripcion: <input type=""  class="form-control" id="descripcion" name="descripcion" aria-describedby="emailHelp">
+                        Tema: <input type="text"  class="form-control" id="tema" name="tema" aria-describedby="emailHelp" required>
+                        Descripcion: <input type="text"  class="form-control" id="descripcion" name="descripcion" aria-describedby="emailHelp" required>
                         <!-- Dia:<input type="date" class="form-control" id="dia" name="dia" aria-describedby="emailHelp"> -->
-                        Fecha de termino: <br><input type="datetime-local" name="fecha" id="fecha">
+                        Fecha de termino: <br><input type="datetime-local" name="fecha" id="fecha" required>
                         <br>
+                        Color: <br>
+                        <input type="radio" name="color" id="alto" value="alto"><label for="alto">Rojo</label>                        
+                        <input type="radio" name="color" id="medio" value="medio"><label for="medio">Amarillo</label>                        
+                        <input type="radio" name="color" id="bajo" value="bajo"><label for="bajo">Verde</label><br><br>
                         <!-- Hora:<input type="time"  class="form-control" id="hora" name="hora" aria-describedby="emailHelp"> -->
                         <input type="submit" value="crear">                        
                     </form>

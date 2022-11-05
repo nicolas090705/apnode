@@ -1578,7 +1578,7 @@ select {
 		aspect-ratio: 1 /1;
 		border: 2px solid #050505;
 	}
-	.eventoalto{
+	.alto{
 		padding: 1.25rem;
 		margin-top: 1.25rem;
 		margin-bottom: 1.25rem;
@@ -1589,7 +1589,7 @@ select {
 		  
 
 	}
-	.eventomedio{
+	.medio{
 		padding: 1.25rem;
 		margin-top: 1.25rem;
 		margin-bottom: 1.25rem;
@@ -1600,7 +1600,7 @@ select {
 		--bd-callout-border: rgba(var(--bs-warning-rgb), .5);
 	}
 
-	.eventobajo{
+	.bajo{
 		padding: 1.25rem;
 		margin-top: 1.25rem;
 		margin-bottom: 1.25rem;

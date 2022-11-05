@@ -17,6 +17,7 @@ var app = express();
 //var bodyParser = require('body-parser');
 //const { ppid } = require('process');
 const { json } = require('express');
+const { Console } = require('console');
 //app.use(bodyParser.json());
 
 /***********settings***********/
@@ -26,6 +27,12 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 /*************middlewares************/
+//esto fuerza al browser a obtener una nueva copia de la pagina al clickear al regresar
+app.use(function(req, res, next) {
+  if (!req.user)
+      res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  next();
+});
 //__dirname path completa
 app.use(express.static(__dirname + '/public'));
 //para capturar los datos del formulario
@@ -37,7 +44,8 @@ app.use(session({
   resave: false,
   saveUninitialized:false
 }));
-app.use(flash());
+
+// app.use(flash());
 
 //Variables globales
 // app.use((req,res,next)=>{
@@ -118,6 +126,7 @@ app.get('/loginvistaApp',function(req,res){
 app.post('/loginvistaDB',function(req,res){
   var correoForm = req.body.campo_correo;
   var pssForm = req.body.campo_pass;
+  //req.session.fd = "";
   conexion.query('SELECT Usu_id, Usu_contraseña FROM usuario WHERE Usu_id = "'+correoForm+'" AND Usu_contraseña = "'+pssForm+'";',function(err,result){
     if(err) throw err; 
     if(result!=""){
@@ -125,13 +134,26 @@ app.post('/loginvistaDB',function(req,res){
       var correoDB = result[0].Usu_id;
       var pssDB = result[0].Usu_contraseña;
       console.log(`correo: ${correoForm} pass: ${pssForm}`);
-      console.log(`correoDB: ${correoDB} pssDB: ${pssDB}`);    
+      console.log(`correoDB: ${correoDB} pssDB: ${pssDB}`); 
       req.session.user = result;
       var usuario = req.session.user;
       console.log("user",req.session.user);
       console.log("Usuario",usuario);
-      console.log("result",result);
-      res.render('prueba',{user:result});
+      //console.log("result",result);
+
+      //obtener la Ti_id de tabla individual
+      //SELECT Ti_id FROM cellgadb.tabla_individual WHERE Usu_id = "anicolash2001@alumno.ipn.mx";
+      conexion.query('SELECT Ti_id FROM cellgadb.tabla_individual WHERE Usu_id = "'+correoDB+'";',(error2,results2)=>{
+        if(error2) throw error2;
+        req.session.fd = results2;
+        var ID = req.session.fd;
+        console.log("id-session: ",req.session.fd); 
+        console.log("id: "+ID); 
+        console.log(`req.session.fd[0]: ${req.session.fd[0]}`);
+        console.log(`req.session.fd[0].Ti_id: ${req.session.fd[0].Ti_id}`);
+
+        res.render('prueba',{user:usuario, id:ID});
+      });
     }else{
       console.log("else");
       res.render('loginvista');
@@ -142,31 +164,66 @@ app.post('/loginvistaDB',function(req,res){
 /******************************FIN LOGIN*****************************/
 app.get('/cerrarSesion',(req,res)=>{
   delete req.session.user;
+  delete req.session.fd;
   res.render('index');
 });
+/******************************REGISTRO TI*********************************/
 app.get('/registroTI',(req,res)=>{
-  var usuario = req.session.user;
-  console.log("/registroTI",usuario);
-  res.render('registroTI',{user:usuario});
+  console.log('/registroTI')
+  //console.log("req.session.fd: "+req.session.fd[0].Ti_id)//[object Object]
+  if(req.session.fd){
+  let ID = req.session.fd[0].Ti_id;
+  console.log("ID: "+ ID);//10
+  //console.log("ID[0].Ti_id: "+ ID[0].Ti_id);
+  //mostrar las tareas que tiene el usuario
+  //SELECT Tari_id, Tari_tema,Tari_descripcion,tari_fechaExp FROM cellgadb.tarea_ti WHERE Ti_id=10;
+  conexion.query("SELECT Tari_id, Tari_tema,Tari_descripcion,tari_fechaExp,Tari_color FROM cellgadb.tarea_ti WHERE Ti_id='"+ID+"';",(error,results)=>{
+    if(error) throw error;
+    // var temaDB = results[0].Tari_tema;
+    // var descripcionDB = results[0].Tari_descripcion;
+    // var fechaEspDB = results[0].tari_fechaExp;
+    // console.log(`temaDB: ${temaDB} descripcionDB: ${descripcionDB} fechaEspDB: ${fechaEspDB}`);   
+    let usuario = req.session.user;
+    console.log('fuera del query para seleccionar las actividades')
+    res.render('registroTI',{user:usuario, results:results});
+  });
+}else{
+  res.render('loginvista');
+}
+
+  //console.log("/registroTI",usuario);
+  
 });
 /*********************************AGREGAR ACTIVIDAD INDIVIDUAL***************************************/
 app.post('/agregarActividadTIDB',(req,res)=>{
-  console.log('/agregarActividadTIDB');  
-  var usuario = req.session.user;
-  if(usuario){
-  var tema = req.body.tema;
-  var descripcion = req.body.descripcion;
-  var FechaTermino = req.body.fecha;
-  console.log('/agregarActividadTIDB2'); 
-  console.log(`temaForm: ${tema} descForm: ${descripcion} FechaTermino: ${FechaTermino}`);
-  console.log('/agregarActividadTIDB3'); 
-  //INSERT INTO cellgadb.tarea_ti(Tari_tema,Tari_descripcion,Tari_fechaCrea,tari_fechaExp,Ti_id) VALUES ('Prueba1','insertar una actividad',CURRENT_TIMESTAMP(),'2022-11-02 12:57:00','10');
-  conexion.query("INSERT INTO cellgadb.tarea_ti(Tari_tema,Tari_descripcion,Tari_fechaCrea,tari_fechaExp,Ti_id) VALUES ('"+tema+"','"+descripcion+"',CURRENT_TIMESTAMP,'"+FechaTermino+"','10');",(err,results)=>{
+  console.log('/agregarActividadTIDB');
+  console.log('antes')
+  var Ti_id = req.session.fd[0].Ti_id;
+  console.log('despues');
+  console.log(Ti_id);//10
+  var temaForm = req.body.tema;
+  var descripcionForm = req.body.descripcion;
+  var FechaTerminoForm = req.body.fecha;
+  var color = req.body.color;
+  // //tipo de color
+  // if(document.getElementById("alto").checked){
+  //   var color = "rojo";
+  // }
+  // else if(document.getElementById("medio").checked){
+  //   var color = "amarillo";
+  // }
+  // else if(document.getElementById("bajo").checked){
+  //   var color = "verde";
+  // }
+  console.log("color",color);
+  console.log('antes del query de insertar');
+  conexion.query("INSERT INTO cellgadb.tarea_ti(Tari_tema,Tari_descripcion,Tari_fechaCrea,tari_fechaExp,Tari_color,Ti_id) VALUES ('"+temaForm+"','"+descripcionForm+"',CURRENT_TIMESTAMP,'"+FechaTerminoForm+"','"+color+"','"+Ti_id+"');",(err,results2)=>{
     if(err) throw err;
-    console.log('Se agrego actividad',results);
+    console.log('Se agrego actividad',results2);
   });
-  }
-  res.render('registroTI',{user:usuario});
+  console.log('despues del query de agregar')
+  //let usuario = req.session.user;
+  res.render('index');
 });
 
 app.get('/index',(req,res)=>{
@@ -176,6 +233,46 @@ app.get('/index',(req,res)=>{
   //res.render('prueba',{usuario})
   res.render('index');
 });
+
+/*****************************************ACTUALIZAR ACTIVIDAD INDIVIDUAL********************************************************/
+app.get('/actualizar/:id',function(req,res){
+  const id=req.params.id;
+  //SELECT * FROM cellgadb.tarea_ti WHERE Tari_id="11";
+  conexion.query("SELECT * FROM cellgadb.tarea_ti WHERE Tari_id=?",[id],(error,results)=>{
+    if(error)throw error;
+    res.render('actualizar',{user:results[0]});
+  })
+});
+
+app.post("/actualizarDB",function(req,res){
+  var id = req.body.id;
+  var Tema = req.body.Tema;
+  var Descripcion = req.body.Descripcion;
+  var fechaFin = req.body.fechaFin;
+  var color = req.body.color;
+  console.log(color);
+    //ACTUALIZAR
+    //UPDATE cellgadb.tarea_ti SET Tari_tema = 'update2', Tari_descripcion = 'update2', Tari_fechaCrea =CURRENT_TIMESTAMP(), tari_fechaExp='2022-11-02 13:51:05' WHERE Tari_id='9';
+    conexion.query("UPDATE cellgadb.tarea_ti SET Tari_color= '"+color+"', Tari_tema = '"+Tema+"', Tari_descripcion = '"+Descripcion+"', Tari_fechaCrea = CURRENT_TIMESTAMP(), tari_fechaExp='"+fechaFin+"' WHERE Tari_id='"+id+"';",function(error,results){
+      if(error) throw error;
+      res.render("index");
+    });  
+
+});
+
+
+/*******************************************ELIMINAR ACTIVIDAD INDIVIDUAL*************************************************************/
+app.get('/eliminar/:id',function(req,res){
+  const id= req.params.id;
+  //ELIMINAR
+  //DELETE FROM producto WHERE idproducto=16;
+  conexion.query('DELETE FROM cellgadb.tarea_ti WHERE Tari_id=?',[id],(error,results)=>{
+    if(error)throw error;
+    res.redirect('/index');
+  })
+});
+
+
 /*******************************TABLERO EN EQUIPO********************************/
 app.get('/indexequipo',(req,res)=>{
   var usuario = req.session.user;
@@ -207,7 +304,7 @@ app.post('/agregarDB',function(req,res){
 });
 
 app.get('/consultar',function(req,res){
-  var nombre = [];
+  //var nombre = [];
   //MOSTRAR
   conexion.query('SELECT * FROM node.producto;',function(error,result,fields){
     if(error)throw error;
@@ -221,46 +318,46 @@ app.get('/consultar',function(req,res){
   
 });
 
-//ACTUALIZAR
-app.get('/actualizar/:nombre',function(req,res){
-  const nombre=req.params.nombre;
-  conexion.query("SELECT * FROM node.producto WHERE nombre=?",[nombre],(error,results)=>{
-    if(error)throw error;
-    res.render('actualizar',{user:results[0]});
-  })
-  //res.send('este es una prueba actualizar');
-});
+// //ACTUALIZAR
+// app.get('/actualizar/:nombre',function(req,res){
+//   const nombre=req.params.nombre;
+//   conexion.query("SELECT * FROM node.producto WHERE nombre=?",[nombre],(error,results)=>{
+//     if(error)throw error;
+//     res.render('actualizar',{user:results[0]});
+//   })
+//   //res.send('este es una prueba actualizar');
+// });
 
-app.post("/actualizarDB",function(req,res){
-  var nombreid = req.body.nombreid;
-  var nombre = req.body.nombre;
-  var precio = req.body.precio;
-  var descripcion = req.body.descripcion;
+// app.post("/actualizarDB",function(req,res){
+//   var nombreid = req.body.nombreid;
+//   var nombre = req.body.nombre;
+//   var precio = req.body.precio;
+//   var descripcion = req.body.descripcion;
 
-  if(nombre!="" && precio!="" && descripcion!=""){
-    //ACTUALIZAR
-    //UPDATE producto set nombre='goma', precio=12, descripcion='actualizado' WHERE nombre='Angel';
-    conexion.query('UPDATE  producto set nombre="'+nombre+'",precio='+precio+',descripcion="'+descripcion+'" WHERE NOMBRE="'+nombreid+'";',function(error,results){
-      if(error) throw error;
-      res.render("index");
-    });
-  }
+//   if(nombre!="" && precio!="" && descripcion!=""){
+//     //ACTUALIZAR
+//     //UPDATE producto set nombre='goma', precio=12, descripcion='actualizado' WHERE nombre='Angel';
+//     conexion.query('UPDATE  producto set nombre="'+nombre+'",precio='+precio+',descripcion="'+descripcion+'" WHERE NOMBRE="'+nombreid+'";',function(error,results){
+//       if(error) throw error;
+//       res.render("index");
+//     });
+//   }
 
-})
+// })
 
-app.get('/eliminar/:nombre',function(req,res){
-  nombre= req.params.nombre;
-  //ELIMINAR
-  //DELETE FROM producto WHERE idproducto=16;
-  conexion.query('DELETE FROM producto WHERE nombre="'+nombre+'";',(error,results)=>{
-    if(error)throw error;
-    res.render('despuesEliminar');
-  })
-});
+// app.get('/eliminar/:nombre',function(req,res){
+//   nombre= req.params.nombre;
+//   //ELIMINAR
+//   //DELETE FROM producto WHERE idproducto=16;
+//   conexion.query('DELETE FROM producto WHERE nombre="'+nombre+'";',(error,results)=>{
+//     if(error)throw error;
+//     res.render('despuesEliminar');
+//   })
+// });
 
-app.get('/despuesEliminar', function(req,res){
-  res.render('index');
-})
+// app.get('/despuesEliminar', function(req,res){
+//   res.render('index');
+// })
 
 app.listen(3000,()=>{
   console.log('Server corriendo en http://localhost:3000')
