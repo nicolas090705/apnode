@@ -77,18 +77,18 @@ conexion.connect(function(error){
 
 /********************************** REGISTRAR UN NUEVO USUARIO ******************************/
 app.get('/registrarvistaApp',function(req,res){
-  res.render("registrarvista");    
+  const usuario = req.session.user;
+  usuario ? res.render("index") : res.render("registrarvista");
 });
 
 app.post('/registrarDB',function(req,res){
-  var nombre = req.body.nombre;
-  var correo = req.body.correo;
-  var contraseña = req.body.pss;
+  const {nombre,correo,pss} = req.body;
+  //var nombre = req.body.nombre;
+  //var correo = req.body.correo;
+  //var contraseña = req.body.pss;
   console.log(nombre);
   console.log(correo);
-  console.log(contraseña);
-
-  if(nombre!="" && correo!="" && contraseña!=""){
+  console.log(pss);
     //validar si no hay registros con el correo
     //SELECT Usu_id FROM cellgadb.usuario WHERE Usu_id='anicolash2001@alumno.ipn.mx'; 
     conexion.query("SELECT Usu_id FROM cellgadb.usuario WHERE Usu_id='"+correo+"';",(error,results)=>{
@@ -98,7 +98,7 @@ app.post('/registrarDB',function(req,res){
       if(results==""){
         //INSERTAR 
         //INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("dddd","ddd","dd",CURRENT_TIMESTAMP);
-        conexion.query('INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("'+correo+'","'+contraseña+'","'+nombre+'",CURRENT_TIMESTAMP);',function(error2,results2){
+        conexion.query('INSERT INTO usuario(Usu_id,Usu_contraseña,Usu_nombre,Usu_fechaReg) VALUES("'+correo+'","'+pss+'","'+nombre+'",CURRENT_TIMESTAMP);',function(error2,results2){
           if(error2)throw error2;      
             console.log("Usuario Agregado: ",results2);             
         });
@@ -108,26 +108,33 @@ app.post('/registrarDB',function(req,res){
         conexion.query('INSERT INTO cellgadb.tabla_individual(Ti_nombre,Usu_id) VALUES("tabla de '+nombre+'", "'+correo+'" );',(error3,results3)=>{
           if(error3) throw error3;
           console.log('Tabla individual creada ',results3);
+
+          //correo==="administrador@gmail.com" && pss==="adminnico" ? admin = true : admin = false
+
           res.render("index");
-        });        
+        });
+
+        
+
       }else{
         console.log("if results no vacio")
         res.render('registrarvista');
       }
     });    
-  }
+  
 });
 
 /******************************************INICIAR SESION************************/
 app.get('/loginvistaApp',function(req,res){
-  res.render("loginvista");
+  const usuario = req.session.user;
+  usuario ? res.render("index") : res.render("loginvista");
 });
 
 app.post('/loginvistaDB',function(req,res){
   var correoForm = req.body.campo_correo;
   var pssForm = req.body.campo_pass;
   //req.session.fd = "";
-  conexion.query('SELECT Usu_id, Usu_contraseña FROM usuario WHERE Usu_id = "'+correoForm+'" AND Usu_contraseña = "'+pssForm+'";',function(err,result){
+  conexion.query('SELECT Usu_id, Usu_contraseña, Usu_nombre FROM usuario WHERE Usu_id = "'+correoForm+'" AND Usu_contraseña = "'+pssForm+'";',function(err,result){
     if(err) throw err; 
     if(result!=""){
       console.log("if results!=''");
@@ -162,11 +169,13 @@ app.post('/loginvistaDB',function(req,res){
 });
 
 /******************************FIN LOGIN*****************************/
+
 app.get('/cerrarSesion',(req,res)=>{
   delete req.session.user;
   delete req.session.fd;
   res.render('index');
 });
+
 /******************************REGISTRO TI*********************************/
 app.get('/registroTI',(req,res)=>{
   console.log('/registroTI')
@@ -194,6 +203,7 @@ app.get('/registroTI',(req,res)=>{
   //console.log("/registroTI",usuario);
   
 });
+
 /*********************************AGREGAR ACTIVIDAD INDIVIDUAL***************************************/
 app.post('/agregarActividadTIDB',(req,res)=>{
   console.log('/agregarActividadTIDB');
@@ -272,6 +282,30 @@ app.get('/eliminar/:id',function(req,res){
   })
 });
 
+/**************************************ADMINISTRADOR***************************************/
+app.get('/admin',(req,res)=>{
+  const usuario = req.session.user;
+  let usuariosDB="";
+  if(usuario){
+    usuario[0].Usu_id =='administrador@gmail.com' && usuario[0].Usu_contraseña =='adminnico' ? res.render('Administrador',{user:usuario, usuariosDB:usuariosDB}) : res.render('admin');
+  }
+  res.render('admin')
+});
+app.post('/adminSingIn',(req,res)=>{
+  let usuariosDB="";
+  const usuario = req.session.user;
+  let correo = req.body.correo;
+  let pss = req.body.pss;
+  console.log(`correoAdmin: ${correo} pssAdmin: ${pss}`);
+  correo == "administrador@gmail.com" && pss=="adminnico" ? res.render('Administrador',{user:usuario,usuariosDB:usuariosDB}) : res.render('admin');
+});
+app.get('/consultar',(req,res)=>{
+  console.log("/consultar");
+  conexion.query('SELECT * FROM cellgadb.usuario;',(error,result,fields)=>{
+    if(error)throw error;
+    res.render('Administrador',{usuariosDB:result});
+  });  
+});
 
 /*******************************TABLERO EN EQUIPO********************************/
 app.get('/indexequipo',(req,res)=>{

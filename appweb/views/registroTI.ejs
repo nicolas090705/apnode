@@ -52,6 +52,9 @@
                         <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false" >Usuario</a>
                         <ul class="dropdown-menu" aria-labelledby="dropdown01">
                         
+                            <li><a class="dropdown-item">Signed in as</a></li>
+                            <li><a class="dropdown-item"> <%= user[0].Usu_nombre %> </a></li>
+                            <li><div class="dropdown-divider"></div></li>
                             <li><a class="dropdown-item" href="/cerrarSesion">Cerrar Sesion</a></li>
                         </ul>
                     </li>
@@ -86,26 +89,7 @@
                 <a href="/actualizar/<%= results[i].Tari_id %>">UPDATE</a>
                 <a href="/eliminar/<%= results[i].Tari_id %>">DELETE</a>                
             </div>
-        <% } %>
-
-
-        <div class="alto">
-            <strong>Hacer la tarea de química.</strong><br>
-            <p>Contestar todas las preguntas que dejó, e investigar acerca de la próxima práctica.</p>
-        </div>
-        <div class="medio">
-            <strong>Sacar la basura.</strong><br>
-            <p></p>
-        </div>
-        
-        <div class="bajo">
-            <strong>Comprar fruta.</strong><br>
-            <p>Mango, sandía, plátano y papaya.</p>
-        </div>
-        <div class="medio">
-            <strong>Realizar los trámites pendientes.</strong><br>
-            <p>Rellenar el formulario, escanear los archivos.</p>
-        </div>
+        <% } %>     
        
 
     </div>
@@ -119,7 +103,7 @@
                     <form action="/agregarActividadTIDB" method="POST">
                         <h3>Ingrese la informacion de la asignacion</h3>
                         <hr>
-                        Tema: <input type="text"  class="form-control" id="tema" name="tema" aria-describedby="emailHelp" required>
+                        Tema: <input type="text"  class="form-control" id="tema" name="tema" aria-describedby="emailHelp" autofocus required>
                         Descripcion: <input type="text"  class="form-control" id="descripcion" name="descripcion" aria-describedby="emailHelp" required>
                         <!-- Dia:<input type="date" class="form-control" id="dia" name="dia" aria-describedby="emailHelp"> -->
                         Fecha de termino: <br><input type="datetime-local" name="fecha" id="fecha" required>

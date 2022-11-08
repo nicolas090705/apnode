@@ -8,7 +8,7 @@ const arreglo = main.arryOfNumbers();
 describe('main', function(){    
     describe('txt', () => {
         it('texto igual a hello world',()=>{
-            assert.equal(text, 'hello world')
+            assert.equal(text, 'hello worldw')
         });
         it('tipo de dato String',()=>{
             assert.typeOf(text, 'string', 'No es un string')
