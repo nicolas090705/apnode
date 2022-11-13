@@ -38,9 +38,7 @@
 
             <!-- Text Logo - Use this if you don't have a graphic logo -->
             <a class="navbar-brand logo-text" href="index">Cellga</a>
-            <button class="navbar-toggler p-0 border-0" type="button" id="navbarSideCollapse" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            
 
             <button class="navbar-toggler p-0 border-0" type="button" id="navbarSideCollapse" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -76,7 +74,9 @@
 
     <div class="container">
         <div class="contenedor">
-            <a href="tableroequipo.html">
+            
+            
+            <a href="">
                 <div class="cuadros">
                     Matemáticas
                 </div>
@@ -132,20 +132,20 @@
             <div class="modal-content">
                 <div class="row">
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    <form action="registroTE.jsp">
+                    <form action="/registroTE" method="POST">
                         <h3>Información del tablero</h3>
                         <hr>
                         <h4>Nombre:</h4>
-                        <input  class="form-control" id="nombretablero" name="nombretablero" aria-describedby="emailHelp">
+                        <input  class="form-control" id="nombretablero" name="nombretablero" aria-describedby="emailHelp" autofocus required>
                         <br>
                         <h4>Descripción:</h4>
-                        <input  class="form-control" id="descripcion" name="descripcion" aria-describedby="emailHelp">
+                        <input  class="form-control" id="descripciontablero" name="descripciontablero" aria-describedby="emailHelp" required>
                         <br>
-                        <input type="submit" value="Crear">
-                    </form>                             
                         <div class="separar">
-                            <a id="modalCtaBtn" class="btn-solid-reg" href="indexequipo.jsp">CREAR</a>
-                        </div>
+                            <input type="submit" id="modalCtaBtn" class="btn-solid-reg" value="Crear Tablerodd">    
+                        </div>                        
+                    </form>                             
+                        
                 </div><!-- end of row -->
             </div> <!-- end of modal-content -->
         </div> <!-- end of modal-dialog -->

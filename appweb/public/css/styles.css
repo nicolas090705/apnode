@@ -1204,7 +1204,13 @@ select {
 /*************************/	
 /* Min-width 768px */
 @media (min-width: 200px) {
-
+	
+	.formulario{
+        margin: auto;
+        width: 500px;
+        margin-top: 150px;
+        border-radius: 2%;
+    }
 	/* Header */
 	.header {
 		padding-top: 9rem;
@@ -1540,7 +1546,73 @@ select {
 
 /* Min-width 1200px */
 @media (min-width: 200px) {
+
+	.body1 {
+		font-family: Arial, Helvetica, sans-serif;
+		margin: 0;
+	   
+		background-size: cover;
+		background-attachment: fixed;
+	}
 	
+	.contenedor{
+		width: 100%;
+		padding: 15px;
+	}
+	.formulario{
+		background: #fff;
+		margin-top: 150px;
+		padding: 3px;
+	}
+	h1{
+		text-align: center;
+		color: #1a2537;
+		font-size: 40px;
+	}
+	input[type="text"],
+	input[type="password"]{
+		font-size: 20px;
+		width: 82%;
+		padding: 10px;
+		border: none;
+	}
+	.input-contenedor{
+		margin-bottom: 15px;
+		border: 1px solid #aaa;
+	}
+	.icon{
+		min-width: 50px;
+		text-align: center;
+		color: #999;
+	}
+	.button{
+		border: none;
+		width: 100%;
+		color: white;
+		border: 1px solid #ff5574;
+		font-size: 20px;
+		background:  #ff5574;
+		padding: 15px 20px;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+	.button:hover{
+		background-color: transparent;
+		color: #ff5574; /* needs to stay here because of the color property of a tag */
+		text-decoration: none;
+	}
+	p{
+		text-align: center;
+	}
+	.link{
+		text-decoration: none;
+		  color: #1a2537;
+		font-weight: 600;
+	}
+	.link:hover{
+		 color: cadetblue;
+	}
 	/* General Styles */
 	.container {
 		max-width: 1140px;
@@ -1578,6 +1650,7 @@ select {
 		aspect-ratio: 1 /1;
 		border: 2px solid #050505;
 	}
+
 	.alto{
 		padding: 1.25rem;
 		margin-top: 1.25rem;

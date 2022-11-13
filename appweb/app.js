@@ -64,7 +64,7 @@ var conexion = mysql.createConnection({
   host: 'localhost',
   database: 'cellgadb',
   user: 'root',
-  password:''
+  password:'n0m3l0'
 });
 conexion.connect(function(error){
   if(error){
@@ -306,11 +306,62 @@ app.get('/consultar',(req,res)=>{
     res.render('Administrador',{usuariosDB:result});
   });  
 });
-
 /*******************************TABLERO EN EQUIPO********************************/
 app.get('/indexequipo',(req,res)=>{
   var usuario = req.session.user;
   res.render('indexequipo',{user:usuario});  
+});
+
+
+app.get('/indexequiposview',(req,res)=>{
+    
+  if(req.session.user){
+  let corr = req.session.user[0].Usu_id;	
+  conexion.query("SELECT Au_id, Ro_id,Te_id FROM cellgadb.accesousu WHERE Usu_id='"+corr+"';",(error,results)=>{
+    if(error) throw error;
+    let tablerosnom = new Array[(results.length-1)]
+    let tablerosdes = new Array[(results.length-1)]
+    for(i=0; i = results.length; i++){
+      conexion.query("SELECT Te_tema,Te_descripcion FROM cellgadb.tabla_equipo WHERE Te_id '"+results[i].Te_id+"';",function(error2,results2){
+          tablerosnom[i] = results2[0].Te_tema;
+          tablerosdes[i] = results2[1].Te_descripcion;
+      });
+    }
+    let usuario = req.session.user;
+    res.render('indexequipo',{user:usuario, results:results,tablerosnom:tablerosnom,tablerosdes:tablerosdes});
+  });
+}else{
+  res.render('loginvista');
+}
+})
+
+app.post('/registroTE',function(req,res){
+  console.log("/registroTE");
+  var nombreTE = req.body.nombretablero;
+  var descripcionTE = req.body.descripciontablero;
+  var corr = req.session.user[0].Usu_id;
+  console.log(`${nombreTE} ${descripcionTE} ${corr}`)
+  var id = "";
+  var id2 = "";
+  if(nombreTE!="" && descripcionTE!=""){
+      while(id = id2){
+          id = generarRandom(8);
+          conexion.query("SELECT Te_id FROM cellgadb.tabla_equipo WHERE Te_id = '"+id+"';",function(err,result){
+              if(err)throw err;
+              id2 = result[0].Te_id;
+              console.log(id2);
+          });
+      }
+      conexion.query("INSERT INTO tabla_equipo(Te_id,Te_tema,Te_descripcion)VALUES('"+id+"','"+nombreTE+"','"+descripcionTES+"');",function(err2,result2){
+          if(err2)throw err2;
+      });
+      conexion.query("INSERT INTO accesousu(Ro_id,Usu_id,Te_id)VALUES('1','"+corr+"','"+id+"');",function(err3,result3){
+          if(err3)throw err3;
+      });
+       
+  }else{
+      res.render('indexequipo');
+  }
 });
 
 app.get('/prueba2',(req,res)=>{
